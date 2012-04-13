@@ -1,12 +1,17 @@
 ## setGeneric("fetch", function(obj, ...) standardGeneric("fetch"))
 fetch <- function(obj, which, ..., gene.id,
+                  truncate.gaps = FALSE,
+                  truncate.fun = NULL,
+                  ratio = 0.0025,
                   resize.extra = 10,
                   include.level = TRUE,
                   use.name = TRUE,
-                  type = c("all", "single", "exons.reduce", "exons.all", "exons.geneid",
-                            "gapped.pair", "raw", "all")){
+                  columns = c("tx_id", "tx_name","gene_id"),
+                  type = c("all", "single", "exons.reduce", "exons.all",
+                    "exons.geneid",  "gapped.pair", "raw", "all")){
 
-  .txdb.type <- c("all", "single", "exons.reduce", "exons.all", "exons.geneid")
+  .txdb.type <- c("all", "single", "exons.reduce",
+                  "exons.all", "exons.geneid")
   .bamfile.type <- c("gapped.pair", "raw", "all")
 
   ## type <- match.arg(type)
@@ -20,6 +25,11 @@ fetch <- function(obj, which, ..., gene.id,
     if(!(type %in% .txdb.type))
       stop("type for TranscriptDb must be ", .txdb.type)
     require(GenomicFeatures)
+    if(is.list(which)){
+      message("Parsing exons based on which(list) arguments")
+      temp <- exons(obj, vals = which, columns = columns)
+      which <- range(temp)
+    }    
     ## 1st set all the sequences to be inactive:
     isActiveSeq(obj)[seqlevels(obj)] <- FALSE
     ## Then set only "chr9" to be active:
@@ -53,13 +63,10 @@ fetch <- function(obj, which, ..., gene.id,
       message("Parsing cds...")
       cdss <- cdsBy(obj, "tx")
       message("Parsing transcripts...")
-      tx <- transcripts(obj, columns = c("tx_id", "tx_name","gene_id"))
+      tx <- transcripts(obj, columns = columns)
       tx <- subsetByOverlaps(tx, which)
       message("Aggregating...")      
       txids <- values(tx)$tx_id
-      ## txnms <- values(tx)$tx_name
-      ## geneids <- values(tx)$gene_id
-      ## need to add gene id
       lst <- lapply(txids, function(id){
         id <- as.character(id)
         tx_nm <- values(tx)[values(tx)$tx_id == id, "tx_name"]
@@ -87,26 +94,24 @@ fetch <- function(obj, which, ..., gene.id,
         }else{
           introns.cur <- GRanges()
         }
-         ## tryres <- try(introns.cur <- GRanges(seqs,IRanges(gaps(ranges(exons.cur)))))
-        ## if(inherits(tryres, "try-error")) browser()
         if(!is.null(cds.cur)){
           values(cds.cur) <- data.frame(tx_id = id,
                                         tx_name = tx_nm,
-                                        gene_id = gene_id,                                        
+                                        gene_id = gene_id,
                                         type = "cds")
 
           cds_union <- reduce(cds.cur)
           utrs <- setdiff(exon_union, cds_union)
           values(utrs) <- data.frame(tx_id = id,
                                      tx_name = tx_nm,
-                                        gene_id = gene_id,                                     
+                                     gene_id = gene_id,
                                      type = "utr")
           ir.g2 <- gaps(reduce(c(ranges(cds_union), ranges(utrs))))
           if(length(ir.g2)){
             gaps.cur <- GRanges(seqs,ir.g2)
           values(gaps.cur) <- data.frame(tx_id = id,
                                          tx_name = tx_nm,
-                                        gene_id = gene_id,                                         
+                                        gene_id = gene_id,
                                          type = "gap")
           }else{
             gaps.cur <- GRanges()
@@ -125,9 +130,13 @@ fetch <- function(obj, which, ..., gene.id,
       })
       res <- do.call("c", lst)
       isActiveSeq(obj)[seqlevels(obj)] <- TRUE
-      res <- keepSeqlevels(res, unique(as.character(seqnames(res))))
+      if(length(res))
+        res <- keepSeqlevels(res, unique(as.character(seqnames(res))))
+      else
+        res <- GRanges()
     }
     if(type == "single"){
+      if(length(res)){
       cds.s <- reduce(res[values(res)$type == "cds"])
       values(cds.s)$type <- factor("cds")
       exon.s <- reduce(res[values(res)$type == "exon"])
@@ -138,6 +147,7 @@ fetch <- function(obj, which, ..., gene.id,
                     end = max(end(cds.s)))
       values(gap.s)$type <- factor("gap")
       res <- c(cds.s, utr.s, gap.s)
+    }
     }
     message("Done")
   }
@@ -207,6 +217,17 @@ fetch <- function(obj, which, ..., gene.id,
       values(res.gp)$isize <- isize[values(res.gp)$qname]
       res <- res.gp
     }
+  }
+  if(truncate.gaps){
+    if(is.null(truncate.fun)){
+      if("gap" %in% unique(values(res)$type))
+        idx <- values(res)$type %in% c("utr", "cds")
+      res.s <- reduce(res[idx], ignore.strand = TRUE)
+      truncate.fun <- shrinkageFun(gaps(res.s, min(start(res.s)), max(end(res.s))),
+                                   maxGap(gaps(res.s, min(start(res.s)), max(end(res.s))),
+                                          ratio = ratio))
+    }
+    res <- truncate.fun(res)
   }
   res
 }

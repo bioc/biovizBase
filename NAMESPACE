@@ -6,14 +6,16 @@ useDynLib(biovizBase, .registration=TRUE)
 ## methods
 import(methods)
 ## BiocGenerics
-importFrom(BiocGenerics, cbind, rbind, unique,
-           lapply, sapply, setdiff, Reduce)
+import(BiocGenerics)
+
 ## importFrom(BiocGenerics, cbind, rbind)
 ## RColorBrewer
 import(RColorBrewer)
 import(dichromat)
 ## scales
 import(scales)
+## Hmisc
+importFrom(Hmisc, bezier)
 ## IRanges
 importFrom(IRanges, IRanges,  disjointBins,
            matchMatrix, findOverlaps, subsetByOverlaps,
@@ -28,7 +30,7 @@ importFrom(IRanges, IRanges,  disjointBins,
            ## runValue, runLength,
            reduce, punion, pgap, gaps)
 
-importMethodsFrom(IRanges,  split, sort,
+importMethodsFrom(IRanges,  split, sort, as.factor,
                   unlist,
                   as.data.frame,
                   length,
@@ -67,14 +69,14 @@ importFrom(Rsamtools, index, scanBamFlag, PileupFiles,
 importMethodsFrom(Rsamtools, path, ScanBamParam,
                  applyPileups, scanBam, readBamGappedAlignments)
 
+importClassesFrom(GenomicFeatures,TranscriptDb)
+
 ## ======================================================================
 ##    export
 ## ======================================================================
 ## color
 export(getBioColor,
        plotColorLegend,
-       transformGRangesForEvenSpace,
-       transformGRangesToDfWithTicks,
        genBrewerBlindPalInfo,
        genDichromatPalInfo,
        genBlindPalInfo,
@@ -85,11 +87,34 @@ export(getBioColor,
        estimateCoverage)
 
 
+
+## transform
+export(transformToGenome,
+       transformToCircle,
+       transformToRectInCircle,
+       transformToBarInCircle,
+       transformToSegInCircle,
+       transformToLinkInCircle,
+       transformDfToGr,
+       transformGRangesForEvenSpace)
+
+exportMethods(transformToDf)
+
 ## utils
 exportMethods(addStepping, 
-              shrinkageFun, maxGap)
+              shrinkageFun,
+              maxGap, 
+              splitByFacets,
+              getGaps,
+              getXScale,
+              getYLab)
 
 export(isIdeogram, isSimpleIdeogram, getIdeogram, containLetters,
        pileupAsGRanges, pileupGRangesAsVariantTable, GCcontent,
-       showColor, isJunctionRead, isMatchedWithModel)
+       showColor, isJunctionRead, isMatchedWithModel,
+       flatGrl, getIdeoGR, getScale, getFormalNames, subsetArgsByFormals,
+       parseArgsForAes, parseArgsForNonAes, strip_formula_dots,
+       is_coord_truncate_gaps, is_coord_genome)
+
+
 ## exportPattern("^[^\\.]")
