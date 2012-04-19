@@ -211,7 +211,7 @@ transformToBarInCircle <- function(data, y = NULL, space.skip = 0.1, trackWidth 
   data.back <- data
     ## need to consider the space
   if(length(y)){
-    values(data)$stepping <- values(data)[, as.character(.y)]
+    values(data)$stepping <- values(data)[, as.character(y)]
   }else{
     if("score" %in% colnames(values(data))){
       message("use 'score' for default y, or you can specify it in aes()")
