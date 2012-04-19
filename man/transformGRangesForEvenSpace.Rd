@@ -27,6 +27,7 @@
 \examples{
 library(GenomicRanges)
 gr <- GRanges("chr1", IRanges(seq(1,100, length.out = 10), width = 5))
+library(biovizBase)
 transformGRangesForEvenSpace(gr)
 }
 \author{Tengfei Yin}
