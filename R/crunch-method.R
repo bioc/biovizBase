@@ -14,8 +14,12 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     }
 
     seqnms <- as.character(unique(seqnames(which)))
-
-    seqlevels(obj, force = TRUE) <- seqnms
+    if(seqnms %in% seqlevels(obj)){
+        seqlevels(obj, force = TRUE) <- seqnms
+    }else{
+        stop(seqnms, " is not matched with seqlevels of your object, please rename your 'which' arguments ")
+    }
+    ## seqlevels(obj, force = TRUE) <- seqnms
     on.exit(seqlevels0(obj))
 
 
