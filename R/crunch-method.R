@@ -28,6 +28,7 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     exons <- exonsByOverlaps(obj, which, columns = c("exon_id", "tx_id")) # 1.6
     txids <- unlist(exons$tx_id)
     idx <- togroup(exons$tx_id)
+
     exons <- exons[idx]
     exons <- exons[,1]
     exons$tx_id <- txids
@@ -50,7 +51,7 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     
     tx <- transcriptsByOverlaps(obj, which, columns = columns)
 
-    message("Parsing utrs and aggregating...")      
+    message("Parsing utrs...")      
     txids <- as.character(values(tx)$tx_id)
 
     ## new method operate on GRangesList levels, and it is much faster to aggregate
@@ -66,6 +67,7 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     
 
     ## exons
+    message("------exons...")
     gr.exons <- unlist(exons)
     .nms <- as.character(gr.exons$tx_id)
     .gid.nms <- mt[.nms, "gene_id"]
@@ -77,6 +79,7 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     names(gr.exons) <- NULL
     
     ## cds
+    message("------cdss...")    
     gr.cdss <- unlist(cdss)
     .nms <- as.character(gr.cdss$tx_id)
     .gid.nms <- mt[.nms, "gene_id"]
@@ -92,6 +95,7 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
     }
 
     ## intron
+    message("------introns...")
     irl.introns <- gaps(ranges(exons))
     ir.introns <- unlist(irl.introns)
     if(length(ir.introns)){
@@ -107,21 +111,27 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
         gr.introns <- GRanges()
     }
     ## utrs
+    message("------utr...")    
     if(length(exons) && length(cdss)){
         irl.utrs <- setdiff(ranges(exons), ranges(cdss))
         ir.utrs <- unlist(irl.utrs)
-        .nms <- names(ir.utrs)
-        .gid.nms <- mt[.nms, "gene_id"]
-        .tx.nms <- mt[.nms, "tx_name"]
-        gr.utrs <- GRanges(seqnms, ir.utrs, tx_id = .nms,
-                           tx_name = .tx.nms, gene_id = .gid.nms,
-                           type = "utr")
-        names(gr.utrs) <- NULL
-        values(gr.utrs)$type <-     as.character(values(gr.utrs)$type)
+        if(length(ir.utrs)){
+            .nms <- names(ir.utrs)
+            .gid.nms <- mt[.nms, "gene_id"]
+            .tx.nms <- mt[.nms, "tx_name"]
+            gr.utrs <- GRanges(seqnms, ir.utrs, tx_id = .nms,
+                               tx_name = .tx.nms, gene_id = .gid.nms,
+                               type = "utr")
+            names(gr.utrs) <- NULL
+            values(gr.utrs)$type <-     as.character(values(gr.utrs)$type)
+        }else{
+            gr.utrs <- GRanges()            
+        }
     }else{
         gr.utrs <- GRanges()
     }
     ## combine
+    message("aggregating...")
     res <- c(gr.exons, gr.cdss, gr.introns, gr.utrs)
 
     if(!length(res))
