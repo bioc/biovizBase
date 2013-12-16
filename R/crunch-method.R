@@ -185,7 +185,7 @@ setMethod("crunch", "GAlignments", function(obj, which,
     if(!length(obj))
         stop("No entry in the GAlignments data")
     if(is.null(names(obj)))
-        stop("Missing qname, please make use.name = TRUE, when reading GAlignments")
+        stop("Missing qname, please make use.names = TRUE, when reading GAlignments")
     grg <- grglist(obj)
     grg.u <- stack(grg, ".grl.name")
     message("extracting information...")
@@ -213,13 +213,14 @@ setMethod("crunch", "BamFile", function(obj, which, ...,
                                         truncate.fun = NULL,
                                         ratio = 0.0025){
 
+    type <- match.arg(type)    
     ## require(Rsamtools)
-    type <- match.arg(type)
     if(type == "gapped.pair"){
         message("Read GAlignments from BamFile...")
-        ga <- readGAlignmentsFromBam(obj, param = ScanBamParam(which = which), ...)
-        res <- as(ga, "GRanges")
-        ## res <- crunch(ga)
+        ga <- readGAlignmentsFromBam(obj,
+                                     param = ScanBamParam(which = which), use.names = TRUE, ...)
+
+        res <- crunch(ga)
     }
 
     if(type == "raw"){
@@ -232,11 +233,9 @@ setMethod("crunch", "BamFile", function(obj, which, ...,
         res.mb <- scanBamGRanges(obj, which,
                                  flag = scanBamFlag(isFirstMateRead = TRUE))
         message("Read GAlignments from BamFile...")
-        ga <- readGAlignmentsFromBam(obj,
-                                     param = ScanBamParam(which = which),
-                                     use.names = use.name, ...)
-        ga <- as(ga, "GRanges")        
-        res.gp <- ga
+        ga <- readGAlignmentsFromBam(obj, param = ScanBamParam(which = which), use.names = TRUE, ...)
+
+        res.gp <- crunch(ga)
         message("Combine...")
         nms <- values(res.mb)$qname
         ## fow now just, using isize
