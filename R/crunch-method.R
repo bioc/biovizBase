@@ -214,12 +214,12 @@ setMethod("crunch", "BamFile", function(obj, which, ...,
                                         ratio = 0.0025){
 
     ## require(Rsamtools)
+    type <- match.arg(type)
     if(type == "gapped.pair"){
         message("Read GAlignments from BamFile...")
-        ga <- readGAlignmentsFromBam(obj,
-                                     param = ScanBamParam(which = which),
-                                     use.names = use.name, ...)
-        res <- crunch(ga)
+        ga <- readGAlignmentsFromBam(obj, param = ScanBamParam(which = which), ...)
+        res <- as(ga, "GRanges")
+        ## res <- crunch(ga)
     }
 
     if(type == "raw"){
@@ -235,7 +235,8 @@ setMethod("crunch", "BamFile", function(obj, which, ...,
         ga <- readGAlignmentsFromBam(obj,
                                      param = ScanBamParam(which = which),
                                      use.names = use.name, ...)
-        res.gp <- crunch(ga)
+        ga <- as(ga, "GRanges")        
+        res.gp <- ga
         message("Combine...")
         nms <- values(res.mb)$qname
         ## fow now just, using isize
