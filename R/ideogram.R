@@ -24,16 +24,16 @@ getIdeogram <- function(genome,subchr = NULL,cytobands=TRUE){
                     IRanges(start=df$chromStart,end=df$chromEnd))
       values(gr) <- df[,c("name","gieStain")]
       message("Loading ranges...")
-   
+
       gr.r <- GRangesForUCSCGenome(genome)
       suppressWarnings(seqlengths(gr) <- seqlengths(gr.r)[names(seqlengths(gr))])
       gr <- trim(gr)
-      
+
     }else{
       message("cytoBand informatin is not available, only get ranges.")
       message("Loading ranges...")
       gr <- GRangesForUCSCGenome(genome)
-      message("Done")      
+      message("Done")
     }
   }else{
     message("Loading...")
@@ -49,13 +49,14 @@ getIdeogram <- function(genome,subchr = NULL,cytobands=TRUE){
   names(lst) <- .gnm
   if(length(lst) == 1)
     res <- lst[[1]]
-  else 
+  else
     res <- lst
   res
 }
 
 isIdeogram <- function(obj){
-  is(obj, "GRanges") && (c("gieStain", "name") %in% colnames(values(obj)))
+  is(obj, "GRanges") && (c("gieStain", "name") %in% colnames(values(obj))) &&
+      all(unique(obj$gieStain) %in% names(biovizBase:::.cytobandColor()))
 }
 
 isSimpleIdeogram <- function(obj){
