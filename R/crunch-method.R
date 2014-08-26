@@ -61,7 +61,9 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
 
         ## new method operate on GRangesList levels, and it is much faster to aggregate
         gids <- values(tx)$gene_id
-        gids <- unlist(lapply(gids, function(x) do.call(paste0, list(as.list(x), collapse = ","))))
+        gids <- unlist(lapply(gids,
+                              function(x)
+                              do.call(paste0, list(as.list(x), collapse = ","))))
 
         tx_nm <- values(tx)$tx_name
 
@@ -118,7 +120,11 @@ setMethod("crunch", "TranscriptDb", function(obj, which,
         ## utrs
         message("------utr...")
         if(length(exons) && length(cdss)){
-            suppressWarnings(irl.utrs <- setdiff(ranges(exons), ranges(cdss)))
+            ## this is important
+            ## need to make sure names matches
+            txnms <- intersect(names(exons), names(cdss)) # mark
+            irl.utrs <- setdiff(ranges(exons[txnms]), ranges(cdss[txnms])) # mark
+
             ir.utrs <- unlist(irl.utrs)
             if(length(ir.utrs)){
                 .nms <- names(ir.utrs)
