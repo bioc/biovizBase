@@ -1,5 +1,5 @@
 Package: biovizBase
-Version: 1.57.0
+Version: 1.57.1
 Title: Basic graphic utilities for visualization of genomic data.
 Description: The biovizBase package is designed to provide a set of
         utilities, color schemes and conventions for genomic data. It
@@ -15,10 +15,11 @@ Authors@R: c(person("Tengfei", "Yin", role=c("aut"),
 Depends: R (>= 3.5.0), methods
 Imports: grDevices, stats, scales, Hmisc, RColorBrewer,
         dichromat, BiocGenerics, S4Vectors (>= 0.23.19), IRanges (>= 1.99.28),
-        GenomeInfoDb (>= 1.5.14), GenomicRanges (>= 1.23.21),
-        SummarizedExperiment, Biostrings (>= 2.33.11), Rsamtools (>= 1.17.28),
-        GenomicAlignments (>= 1.1.16), GenomicFeatures (>= 1.21.19),
-        AnnotationDbi, VariantAnnotation (>= 1.11.4), ensembldb (>= 1.99.13),
+        Seqinfo, GenomeInfoDb (>= 1.45.5), GenomicRanges (>= 1.61.1),
+        SummarizedExperiment (>= 1.39.1), Biostrings (>= 2.77.2),
+        Rsamtools (>= 2.25.1), GenomicAlignments (>= 1.45.1),
+        GenomicFeatures (>= 1.61.4), AnnotationDbi,
+        VariantAnnotation (>= 1.55.1), ensembldb (>= 2.33.1),
 	AnnotationFilter (>= 0.99.8), rlang
 Suggests: BSgenome.Hsapiens.UCSC.hg19,
         TxDb.Hsapiens.UCSC.hg19.knownGene, BSgenome, rtracklayer,
